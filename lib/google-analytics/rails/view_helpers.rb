@@ -87,13 +87,18 @@ module GoogleAnalytics::Rails
       anonymize = options.delete(:anonymize) || false
       link_attribution = options.delete(:enhanced_link_attribution) || false
       domain = options.delete(:domain) || (local ? "none" : "auto")
-      events = options.delete(:add_events) || []
-      events = [events] unless events.is_a?(Array)
+      additional_events = options.delete(:add_events) || []
+      additional_events = [additional_events] unless additional_events.is_a?(Array)
+      events = []
 
       queue = GAQ.new
 
       # unshift => reverse order
       events.unshift GA::Events::TrackPageview.new(options[:page])
+      additional_events.each do |event|
+        events.unshift event
+      end
+
       # anonymize if needed before tracking the page view
       events.unshift GA::Events::AnonymizeIp.new if anonymize
       events.unshift GA::Events::SetDomainName.new(domain)
